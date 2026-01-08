@@ -127,12 +127,9 @@ if selected_patient:
 
             # Stream the response
             with st.spinner("Analyzing records..."):
-                # Use a unique thread_id per patient to maintain conversation context
-                thread_id = f"patient_{patient_id}"
-
                 for chunk in executor.stream(
                     {"messages": [("user", prompt)]},
-                    config={"configurable": {"thread_id": thread_id}},
+                    config={"configurable": {"thread_id": "default"}},
                     stream_mode="values",
                 ):
                     messages = chunk.get("messages", [])

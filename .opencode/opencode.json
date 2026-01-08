@@ -21,38 +21,8 @@
       "enabled": true
     }
   },
-  "provider": {
-    "google": {
-      "models": {
-        "Gemini 3 Pro Preview Thinking": {
-          "id": "gemini-3-pro-preview",
-          "options": {
-            "thinkingConfig": {
-              "thinkingLevel": "high",
-              "includeThoughts": true
-            }
-          }
-        },
-        "antigravity-claude-sonnet-4-5": {
-          "name": "Claude Sonnet 4.5 (Antigravity)",
-          "limit": { "context": 200000, "output": 64000 },
-          "modalities": {
-            "input": ["text", "image", "pdf"],
-            "output": ["text"]
-          }
-        },
-        "antigravity-claude-opus-4-5": {
-          "name": "Claude Opus 4.5 (Antigravity)",
-          "limit": { "context": 200000, "output": 64000 },
-          "modalities": {
-            "input": ["text", "image", "pdf"],
-            "output": ["text"]
-          }
-        }
-      }
-    }
-  },
-  "plugin": ["opencode-alibaba-qwen3-auth", "opencode-antigravity-auth@1.2.8"],
+  "provider": {},
+  "plugin": ["opencode-alibaba-qwen3-auth", "opencode-gemini-auth@latest"],
   "agent": {
     "build": {
       "mode": "primary",
@@ -78,7 +48,7 @@
     },
     "general": {
       "mode": "subagent",
-      "model": "antigravity-claude-sonnet-4-5",
+      "model": "google/gemini-3-flash-preview",
       "description": "Excels at general purpose tasks."
     },
     "explore": {

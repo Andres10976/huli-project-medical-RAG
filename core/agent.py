@@ -104,6 +104,7 @@ CRITICAL INSTRUCTIONS:
 
 Remember: Visit notes and lab results are NOT in the identity context - you must search for them!"""
 
-        agent = create_agent(self.llm, tools, system_prompt=system_prompt)
+        checkpointer = MemorySaver()
+        agent = create_agent(self.llm, tools, system_prompt=system_prompt, checkpointer=checkpointer )
 
         return agent

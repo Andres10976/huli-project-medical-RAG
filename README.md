@@ -2,42 +2,6 @@
 
 A production-ready medical assistant powered by Retrieval-Augmented Generation (RAG) for querying Electronic Health Records (EHR). Built with semantic search, LLM-based reasoning, and real-time patient data retrieval.
 
-## 🎯 Overview
-
-This system enables healthcare professionals to query patient medical records through natural language, combining:
-
-- **Semantic Search**: Retrieve relevant clinical events from patient history
-- **Context-Aware Responses**: Static identity information (demographics, allergies, medications) always available
-- **Tool-Based Architecture**: LangChain agent with structured search capabilities
-
-## ✨ Key Features
-
-### 1. **Identity vs. Event Data Split**
-
-- **Static Context** (Always in Context Window): Demographics, chronic conditions, allergies, current medications
-- **Dynamic Events** (Retrieved via Search): Visits, lab results, doctor notes, clinical observations
-- **Rationale**: Separates critical static info from voluminous event data, optimizing context window usage
-
-### 2. **Atomic Event Chunking**
-
-- Each visit and lab result is indexed as a separate vector
-- Structured narrative format for optimal semantic matching
-- Enables precise retrieval of specific clinical events
-
-### 3. **Smart Search Capabilities**
-
-- Semantic similarity search using medical-grade embeddings
-- Event type filtering (`visit` vs `lab`)
-- Chronological ordering for temporal queries ("most recent", "latest")
-- Patient-scoped search with metadata filtering
-
-### 4. **Clinical-Grade LLM**
-
-- DeepSeek-Chat via OpenAI-compatible API
-- Temperature set to 0 for consistent, factual responses
-- Strict hallucination prevention instructions
-- Source citation for all retrieved information
-
 ## 🏗️ Architecture
 
 ```
@@ -226,60 +190,6 @@ point_id = uuid.uuid5(NAMESPACE_MEDICAL, f"{patient_id}_{internal_id}")
 - Supports event type filtering without full scans
 - Allows chronological sorting without post-processing
 - Critical for multi-patient system scalability
-
-### 9. **Thread-Based Conversation Context**
-
-**Decision**: Use `thread_id` parameter to maintain conversation history per patient
-
-**Rationale**:
-
-- Preserves context across multiple questions about same patient
-- Enables follow-up questions
-- Separate threads for different patients
-- Better user experience in clinical workflow
-
-**Implementation**:
-
-```python
-thread_id = f"patient_{patient_id}"
-executor.stream(
-    {"messages": [("user", prompt)]},
-    config={"configurable": {"thread_id": thread_id}},
-    stream_mode="values"
-)
-```
-
-### 10. **Streamlit for UI**
-
-**Decision**: Build web interface with Streamlit
-
-**Rationale**:
-
-- Fast development time for PoC projects.
-- Built-in chat interface components
-- Easy sidebar for patient selection
-- Session state management for chat history
-- Tool call visualization for transparency
-- No frontend build pipeline needed
-
-### 11. **Structured System Prompt**
-
-**Decision**: Comprehensive system prompt with explicit instructions and constraints
-
-**Rationale**:
-
-- Enforces strict behavior: always search, never hallucinate
-- Includes current datetime for relative time queries
-- Clear separation of identity vs. event data
-- Explicit error handling instructions
-- Citation requirements for source attribution
-
-**Key Instructions**:
-
-- "MUST use medical_search_tool for ANY question about past visits, labs..."
-- "NEVER make up, invent, or hallucinate medical data"
-- "If you cannot find the requested information, say: No encontré esa información..."
-- "Always cite the exact date and source of information"
 
 ## 🚀 Getting Started
 
