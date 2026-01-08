@@ -1,0 +1,10 @@
+qdrant-client
+voyageai
+langchain
+langchain-community
+langchain-openai
+streamlit
+watchdog
+python-dotenv
+pydantic
+pandas

@@ -1,0 +1,9 @@
+{
+  "patient_id": "P008",
+  "demographics": { "name": "Patient 8", "age": 38, "gender": "M", "blood_type": "O+" },
+  "medical_history": { "chronic_conditions": ["Condition 8"], "allergies": [] },
+  "recent_visits": [{ "date": "2024-12-01", "reason": "Checkup", "notes": "Stable.", "doctor": "Dr. Smith" }],
+  "lab_results": [{ "date": "2024-12-02", "test": "Blood Work", "results": { "Result": "Normal" } }],
+  "doctor_notes": [],
+  "pharmacy_notes": []
+}

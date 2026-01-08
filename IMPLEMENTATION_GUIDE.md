@@ -54,14 +54,21 @@ We will build a single `MedicalSearchTool` with the following parameters:
 
 > "You are a clinical assistant. You are currently seeing **{IdentityContext}**. Use the `MedicalSearchTool` to look up specific history or lab trends. **Always** cite the date of the event in your answer."
 
-## 5\. UI/UX Recommendation
+## 5\. UI/UX Implementation (Python Streamlit)
 
-For a production-ready feel for medics:
+For a production-ready medical prototype using Python, we will use **Streamlit**. It supports complex layouts and handles the "Identity" vs "Chat" split efficiently.
 
-- **Framework:** Next.js + Tailwind + shadcn/ui.
-- **Template:** A "Dashboard" style layout.
-  - **Left Sidebar:** Patient Selector (Card list with Names/IDs).
-  - **Top Bar:** Current Patient Banner (Showing name, age, and **Red Flashing Alert** for Allergies).
-  - **Main Area:** Chat interface with "Source Cards" appearing below LLM responses.
+### Layout Design
 
-- **Reflex:** The chat should automatically reset its memory when the `patient_id` changes in the selector.
+- **Sidebar (Patient Selection):** A dropdown or list of patients loaded from the `data/` directory. When changed, it triggers a `st.session_state.clear()` to reset chat history.
+- **Header (The "Identity" Banner):** A persistent `st.warning` or `st.error` block at the top showing the patient's name, age, and **Allergies** in bright red if present.
+- **Main Body (Chat):** `st.chat_message` for the conversation and `st.expander` to show the "Source Documents" retrieved from Qdrant.
+
+### Streamlit Features to Use:
+
+- **`st.watch` (optional) or `st.empty`:** To show real-time status of the CDC pipeline.
+- **`st.dataframe`:** To display lab result trends (like Glucose evolution) if the doctor asks for a summary.
+
+## 6\. Reflex & Cleanup
+
+The chat must automatically reset its memory when the `patient_id` changes in the selector to prevent cross-patient data contamination (Critical for medical safety).
