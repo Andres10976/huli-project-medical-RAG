@@ -106,21 +106,8 @@ CRITICAL INSTRUCTIONS:
 
 Remember: Visit notes and lab results are NOT in the identity context - you must search for them!"""
 
-        # Create agent with memory checkpointer for streaming
-        checkpointer = MemorySaver()
-
         agent = create_agent(
-            self.llm, tools, system_prompt=system_prompt, checkpointer=checkpointer
+            self.llm, tools, system_prompt=system_prompt
         )
 
         return agent
-
-        agent = create_react_agent(self.llm, tools, prompt)
-        return AgentExecutor(
-            agent=agent,
-            tools=tools,
-            verbose=True,
-            return_intermediate_steps=True,
-            handle_parsing_errors=True,
-            max_iterations=10,
-        )
