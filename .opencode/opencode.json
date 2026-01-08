@@ -1,0 +1,98 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp"
+    },
+    "serena": {
+      "type": "local",
+      "command": [
+        "uvx",
+        "--from",
+        "git+https://github.com/oraios/serena",
+        "serena-mcp-server",
+        "--context",
+        "ide-assistant",
+        "--project",
+        "/home/andres10976/Documents/Github/huli-project-medical-RAG"
+      ],
+      "environment": {},
+      "enabled": true
+    }
+  },
+  "provider": {
+    "google": {
+      "models": {
+        "Gemini 3 Pro Preview Thinking": {
+          "id": "gemini-3-pro-preview",
+          "options": {
+            "thinkingConfig": {
+              "thinkingLevel": "high",
+              "includeThoughts": true
+            }
+          }
+        },
+        "antigravity-claude-sonnet-4-5": {
+          "name": "Claude Sonnet 4.5 (Antigravity)",
+          "limit": { "context": 200000, "output": 64000 },
+          "modalities": {
+            "input": ["text", "image", "pdf"],
+            "output": ["text"]
+          }
+        },
+        "antigravity-claude-opus-4-5": {
+          "name": "Claude Opus 4.5 (Antigravity)",
+          "limit": { "context": 200000, "output": 64000 },
+          "modalities": {
+            "input": ["text", "image", "pdf"],
+            "output": ["text"]
+          }
+        }
+      }
+    }
+  },
+  "plugin": ["opencode-alibaba-qwen3-auth", "opencode-antigravity-auth@1.2.7"],
+  "agent": {
+    "build": {
+      "mode": "primary",
+      "model": "google/gemini-3-flash-preview",
+      "description": "Excels and implementation and coding tasks."
+    },
+    "plan": {
+      "mode": "primary",
+      "model": "google/gemini-3-pro-preview",
+      "description": "Excels at planning and reasoning tasks. Read-only",
+      "tools": {
+        "write": false,
+        "edit": false,
+        "bash": false,
+        "serena_insert_*": false,
+        "serena_replace_*": false,
+        "serena_rename_*": false
+      },
+      "subagents": {
+        "explore": true,
+        "general": false
+      }
+    },
+    "general": {
+      "mode": "subagent",
+      "model": "antigravity-claude-sonnet-4-5",
+      "description": "Excels at general purpose tasks."
+    },
+    "explore": {
+      "mode": "subagent",
+      "model": "google/gemini-3-flash-preview",
+      "description": "Used to explore the codebase and gather information about it. Read-only",
+      "tools": {
+        "write": false,
+        "edit": false,
+        "bash": false,
+        "serena_insert_*": false,
+        "serena_replace_*": false,
+        "serena_rename_*": false
+      }
+    }
+  }
+}
