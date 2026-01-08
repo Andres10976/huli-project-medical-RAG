@@ -56,7 +56,6 @@ selected_patient = st.sidebar.selectbox(
 
 st.sidebar.divider()
 st.sidebar.subheader("System Status")
-st.sidebar.success("CDC Pipeline: Active & Watching")
 st.sidebar.caption("Vector DB: Qdrant Connected")
 
 if selected_patient:
@@ -98,6 +97,45 @@ if selected_patient:
                 st.markdown(message.content)
         elif isinstance(message, AIMessage):
             with st.chat_message("assistant"):
+                # If message has tool calls, show them
+                if (
+                    hasattr(message, "additional_kwargs")
+                    and "tool_calls" in message.additional_kwargs
+                ):
+                    tool_calls = message.additional_kwargs["tool_calls"]
+                    if tool_calls:
+                        for tc in tool_calls:
+                            with st.expander(
+                                f"🛠️ Tool Call: {tc['name']}", expanded=False
+                            ):
+                                st.write("**Input:**")
+                                st.json(tc["args"])
+                                if tc.get("response"):
+                                    st.write("**Observation:**")
+                                    st.text(tc["response"])
+                st.markdown(message.content)
+        elif isinstance(message, AIMessage):
+            with st.chat_message("assistant"):
+                # If message has intermediate steps, show them
+                if (
+                    hasattr(message, "additional_kwargs")
+                    and "intermediate_steps" in message.additional_kwargs
+                ):
+                    intermediate_steps = message.additional_kwargs["intermediate_steps"]
+                    if intermediate_steps:
+                        for action, observation in intermediate_steps:
+                            with st.expander(
+                                f"🛠️ Tool Call: {action.tool}", expanded=False
+                            ):
+                                st.write("**Input:**")
+                                st.json(action.tool_input)
+                                st.write("**Observation:**")
+                                st.text(observation)
+                    else:
+                        st.caption("ℹ️ No tool calls needed - answered from context")
+                st.markdown(message.content)
+        elif isinstance(message, AIMessage):
+            with st.chat_message("assistant"):
                 # If message has intermediate steps, show them
                 if (
                     hasattr(message, "additional_kwargs")
@@ -123,35 +161,80 @@ if selected_patient:
             {"demographics": dem, "medical_history": med}, indent=2
         )
 
-        executor = assistant.get_executor(identity_context)
+        executor = assistant.get_executor(identity_context, patient_id)
 
         with st.chat_message("assistant"):
+            # Create placeholder for streaming
+            message_placeholder = st.empty()
+            tool_calls_placeholder = st.container()
+
+            full_response = ""
+            tool_calls_found = []
+
+            # Stream the response
             with st.spinner("Analyzing records..."):
-                response = executor.invoke(
-                    {
-                        "input": prompt,
-                        "chat_history": st.session_state.chat_history[:-1],
-                    }
-                )
+                # Use a unique thread_id per patient to maintain conversation context
+                thread_id = f"patient_{patient_id}"
 
-                intermediate_steps = response.get("intermediate_steps", [])
+                for chunk in executor.stream(
+                    {"messages": [("user", prompt)]},
+                    config={"configurable": {"thread_id": thread_id}},
+                    stream_mode="values",
+                ):
+                    messages = chunk.get("messages", [])
 
-                # Show tool calls
-                for action, observation in intermediate_steps:
-                    with st.expander(f"🛠️ Tool Call: {action.tool}", expanded=False):
+                    if messages:
+                        last_msg = messages[-1]
+
+                        # Check for tool calls
+                        if hasattr(last_msg, "tool_calls") and last_msg.tool_calls:
+                            for tc in last_msg.tool_calls:
+                                # Find corresponding response
+                                tool_response = None
+                                msg_index = messages.index(last_msg)
+                                if msg_index + 1 < len(messages):
+                                    next_msg = messages[msg_index + 1]
+                                    if hasattr(next_msg, "content"):
+                                        tool_response = next_msg.content
+
+                                tool_call_data = {
+                                    "name": tc.get("name"),
+                                    "args": tc.get("args"),
+                                    "response": tool_response,
+                                }
+
+                                if tool_call_data not in tool_calls_found:
+                                    tool_calls_found.append(tool_call_data)
+
+                        # Stream final AI response
+                        if (
+                            hasattr(last_msg, "content")
+                            and type(last_msg).__name__ == "AIMessage"
+                        ):
+                            if (
+                                not last_msg.tool_calls
+                            ):  # Only show final answer, not tool call messages
+                                full_response = last_msg.content
+                                message_placeholder.markdown(full_response + "▌")
+
+            # Show final response without cursor
+            message_placeholder.markdown(full_response)
+
+            # Show tool calls
+            with tool_calls_placeholder:
+                for tc in tool_calls_found:
+                    with st.expander(f"🛠️ Tool Call: {tc['name']}", expanded=False):
                         st.write("**Input:**")
-                        st.code(action.tool_input)
-                        st.write("**Observation:**")
-                        st.markdown(observation)
+                        st.json(tc["args"])
+                        if tc["response"]:
+                            st.write("**Observation:**")
+                            st.text(tc["response"])
 
-                output = response["output"]
-                st.markdown(output)
-
-                # Store AI message with intermediate steps for persistence
-                ai_msg = AIMessage(
-                    content=output,
-                    additional_kwargs={"intermediate_steps": intermediate_steps},
-                )
-                st.session_state.chat_history.append(ai_msg)
+            # Store AI message
+            ai_msg = AIMessage(
+                content=full_response,
+                additional_kwargs={"tool_calls": tool_calls_found},
+            )
+            st.session_state.chat_history.append(ai_msg)
 else:
     st.info("Please select a patient from the sidebar to begin.")

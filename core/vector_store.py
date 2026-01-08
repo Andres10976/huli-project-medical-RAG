@@ -78,7 +78,17 @@ class MedicalVectorStore:
 
         self.client.upsert(collection_name=self.collection_name, points=points)
 
-    def search(self, query, patient_id, limit=5, event_type=None):
+    def search(self, query, patient_id, limit=5, event_type=None, order_by_date=False):
+        """
+        Search for medical records.
+
+        Args:
+            query: Semantic search query
+            patient_id: Patient ID to filter
+            limit: Number of results
+            event_type: Filter by 'visit' or 'lab' (optional)
+            order_by_date: If True, sort by timestamp descending (for "most recent" queries)
+        """
         query_embedding = self.voyage_client.embed(
             [query], model=self.embedding_model, output_dimension=512
         ).embeddings[0]
@@ -96,11 +106,17 @@ class MedicalVectorStore:
                 )
             )
 
-        results = self.client.search(
+        results = self.client.query_points(
             collection_name=self.collection_name,
-            query_vector=query_embedding,
+            query=query_embedding,
             query_filter=models.Filter(must=must_filters),
-            limit=limit,
-        )
+            limit=limit if not order_by_date else 20,  # Get more results for sorting
+        ).points
+
+        # If we need chronological order, sort by timestamp
+        if order_by_date:
+            results = sorted(
+                results, key=lambda x: x.payload.get("timestamp", ""), reverse=True
+            )[:limit]
 
         return results
