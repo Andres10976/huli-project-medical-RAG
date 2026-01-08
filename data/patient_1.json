@@ -1,13 +1,32 @@
 {
   "patient_id": "P001",
-  "demographics": { "name": "Juan Pérez", "age": 45, "gender": "M", "blood_type": "O+" },
-  "medical_history": { "chronic_conditions": ["Diabetes Tipo 2", "Hipertensión"], "allergies": ["Penicilina"] },
+  "demographics": {
+    "name": "Juan Pérez",
+    "age": 45,
+    "gender": "M",
+    "blood_type": "O+"
+  },
+  "medical_history": {
+    "chronic_conditions": ["Diabetes Tipo 2", "Hipertensión"],
+    "allergies": ["Penicilina"]
+  },
   "recent_visits": [
-    { "date": "2024-10-15", "reason": "Control rutinario", "notes": "Glucosa en ayunas: 128 mg/dL. PA: 135/85. Se ajusta dosis de Losartán.", "doctor": "Dra. Martínez" }
+    {
+      "date": "2024-10-15",
+      "reason": "Control rutinario",
+      "notes": "Glucosa en ayunas: 128 mg/dL. PA: 135/85. Se ajusta dosis de Losartán.",
+      "doctor": "Dra. Martínez"
+    }
   ],
   "lab_results": [
-    { "date": "2024-10-10", "test": "Panel metabólico", "results": { "glucose": "128 mg/dL", "hba1c": "7.2%", "creatinine": "1.1 mg/dL" } }
-  ],
-  "doctor_notes": [{ "date": "2024-10-16", "author": "Dra. Martínez", "content": "Paciente advised to reduce sodium intake." }],
-  "pharmacy_notes": [{ "date": "2024-10-15", "pharmacy": "Farmacia Central", "content": "Losartan 100mg dispensed." }]
+    {
+      "date": "2024-10-10",
+      "test": "Panel metabólico",
+      "results": {
+        "glucose": "128 mg/dL",
+        "hba1c": "7.2%",
+        "creatinine": "1.1 mg/dL"
+      }
+    }
+  ]
 }

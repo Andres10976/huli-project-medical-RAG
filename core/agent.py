@@ -13,13 +13,9 @@ load_dotenv()
 
 
 class MedicalSearchSchema(BaseModel):
-    query: str = Field(
-        description="Semantic search query for clinical history, labs, doctor notes, or pharmacy records"
-    )
+    query: str = Field(description="Semantic search query for clinical history or labs")
     patient_id: str = Field(description="The unique ID of the patient")
-    event_type: Optional[str] = Field(
-        None, description="Filter by 'visit', 'lab', 'doctor_note', or 'pharmacy_note'"
-    )
+    event_type: Optional[str] = Field(None, description="Filter by 'visit' or 'lab'")
 
 
 class MedicalSearchTool(BaseTool):

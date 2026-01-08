@@ -1,9 +1,0 @@
-{
-  "patient_id": "P010",
-  "demographics": { "name": "Patient 10", "age": 50, "gender": "F", "blood_type": "B+" },
-  "medical_history": { "chronic_conditions": ["Anemia"], "allergies": [] },
-  "recent_visits": [{ "date": "2024-12-05", "reason": "Fatigue", "notes": "Low iron.", "doctor": "Dr. Costa" }],
-  "lab_results": [{ "date": "2024-12-06", "test": "Hgb", "results": { "Hemoglobin": "10.5" } }],
-  "doctor_notes": [],
-  "pharmacy_notes": []
-}

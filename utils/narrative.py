@@ -2,50 +2,31 @@ import json
 
 
 def visit_to_narrative(visit, patient_name):
-    """Converts a visit JSON object to a natural language narrative."""
-    date = visit.get("date", "Unknown date")
-    doctor = visit.get("doctor", "a healthcare provider")
-    reason = visit.get("reason", "a consultation")
-    notes = visit.get("notes", "No specific notes recorded.")
-    diagnosis = visit.get("diagnosis", "No formal diagnosis mentioned.")
+    """Structured text for visits: DATE | DOCTOR | REASON | NOTES"""
+    date = visit.get("date", "N/A")
+    doctor = visit.get("doctor", "N/A")
+    reason = visit.get("reason", "N/A")
+    notes = visit.get("notes", "N/A")
 
-    narrative = (
-        f"On {date}, the patient {patient_name} had a {reason} with {doctor}. "
-        f"Clinical notes: {notes}. "
-        f"Diagnosis/Outcome: {diagnosis}."
-    )
-    return narrative
+    return f"DATE: {date} | DOCTOR: {doctor} | REASON: {reason} | NOTES: {notes}"
 
 
 def lab_to_narrative(lab, patient_name):
-    """Converts a lab result JSON object to a natural language narrative."""
-    date = lab.get("date", "Unknown date")
-    test_name = lab.get("test_name", "Unknown test")
-    result = lab.get("result", "No result")
-    ref_range = lab.get("reference_range", "N/A")
-    interpretation = lab.get("interpretation", "N/A")
+    """Structured text for labs: DATE | TEST | RESULTS"""
+    date = lab.get("date", "N/A")
+    test_name = lab.get("test") or lab.get("test_name") or "N/A"
 
-    narrative = (
-        f"On {date}, lab results for {patient_name} showed {test_name}: {result}. "
-        f"The reference range is {ref_range}, and the interpretation is {interpretation}."
-    )
-    return narrative
+    parts = [f"DATE: {date}", f"TEST: {test_name}"]
 
+    results = lab.get("results")
+    if isinstance(results, dict):
+        for k, v in results.items():
+            parts.append(f"{k}: {v}")
+    else:
+        res = lab.get("result") or lab.get("value") or "N/A"
+        parts.append(f"RESULT: {res}")
 
-def doctor_note_to_narrative(note, patient_name):
-    """Directly uses content with prepended metadata."""
-    date = note.get("date", "Unknown date")
-    author = note.get("author", "Unknown Author")
-    content = note.get("content", "")
-    return f"DATE: {date} | AUTHOR: {author} | CONTENT: {content}"
-
-
-def pharmacy_note_to_narrative(note, patient_name):
-    """Standard narrative for pharmacy records."""
-    date = note.get("date", "Unknown date")
-    pharmacy = note.get("pharmacy", "the pharmacy")
-    content = note.get("content", "")
-    return f"Pharmacy Record ({date}) at {pharmacy} for {patient_name}: {content}"
+    return " | ".join(parts)
 
 
 def clean_metadata(metadata):
@@ -54,14 +35,16 @@ def clean_metadata(metadata):
 
 
 def patient_to_chunks(patient_data):
-    """Splits patient data into atomic units for vector indexing."""
+    """
+    Splits patient data into atomic units for vector indexing.
+    Structured text format (not narrative).
+    """
     patient_id = patient_data.get("patient_id")
-    patient_name = patient_data.get("demographics", {}).get("name", "Unknown")
     chunks = []
 
     # Process visits
-    for visit in patient_data.get("recent_visits", []):
-        text = visit_to_narrative(visit, patient_name)
+    for i, visit in enumerate(patient_data.get("recent_visits", [])):
+        text = visit_to_narrative(visit, None)
         metadata = clean_metadata(
             {
                 "patient_id": patient_id,
@@ -70,54 +53,21 @@ def patient_to_chunks(patient_data):
                 "doctor": visit.get("doctor"),
             }
         )
-        # We use visit_id for the deterministic UUID generation, but we don't store it in payload
-        chunks.append(
-            {"text": text, "metadata": metadata, "internal_id": visit.get("visit_id")}
-        )
+        internal_id = visit.get("visit_id") or f"v{i}"
+        chunks.append({"text": text, "metadata": metadata, "internal_id": internal_id})
 
     # Process labs
-    for lab in patient_data.get("lab_results", []):
-        text = lab_to_narrative(lab, patient_name)
+    for i, lab in enumerate(patient_data.get("lab_results", [])):
+        text = lab_to_narrative(lab, None)
         metadata = clean_metadata(
             {
                 "patient_id": patient_id,
                 "timestamp": lab.get("date"),
                 "event_type": "lab",
-                "test_name": lab.get("test_name"),
+                "test_name": lab.get("test") or lab.get("test_name"),
             }
         )
-        chunks.append(
-            {"text": text, "metadata": metadata, "internal_id": lab.get("lab_id")}
-        )
-
-    # Process doctor_notes
-    for note in patient_data.get("doctor_notes", []):
-        text = doctor_note_to_narrative(note, patient_name)
-        metadata = clean_metadata(
-            {
-                "patient_id": patient_id,
-                "timestamp": note.get("date"),
-                "event_type": "doctor_note",
-                "author": note.get("author"),
-            }
-        )
-        chunks.append(
-            {"text": text, "metadata": metadata, "internal_id": note.get("note_id")}
-        )
-
-    # Process pharmacy_notes
-    for note in patient_data.get("pharmacy_notes", []):
-        text = pharmacy_note_to_narrative(note, patient_name)
-        metadata = clean_metadata(
-            {
-                "patient_id": patient_id,
-                "timestamp": note.get("date"),
-                "event_type": "pharmacy_note",
-                "pharmacy": note.get("pharmacy"),
-            }
-        )
-        chunks.append(
-            {"text": text, "metadata": metadata, "internal_id": note.get("entry_id")}
-        )
+        internal_id = lab.get("lab_id") or f"l{i}"
+        chunks.append({"text": text, "metadata": metadata, "internal_id": internal_id})
 
     return chunks

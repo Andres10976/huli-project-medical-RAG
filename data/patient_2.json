@@ -1,13 +1,24 @@
 {
   "patient_id": "P002",
-  "demographics": { "name": "Maria Garcia", "age": 32, "gender": "F", "blood_type": "A-" },
-  "medical_history": { "chronic_conditions": ["Asma"], "allergies": ["Sulfa", "Dust"] },
+  "demographics": {
+    "name": "Maria Garcia",
+    "age": 32,
+    "gender": "F",
+    "blood_type": "A-"
+  },
+  "medical_history": {
+    "chronic_conditions": ["Asma"],
+    "allergies": ["Sulfa", "Dust"]
+  },
   "recent_visits": [
-    { "date": "2024-11-10", "reason": "Asthma flare-up", "notes": "Prescribed Albuterol.", "doctor": "Dr. Lopez" }
+    {
+      "date": "2024-11-10",
+      "reason": "Asthma flare-up",
+      "notes": "Prescribed Albuterol.",
+      "doctor": "Dr. Lopez"
+    }
   ],
   "lab_results": [
     { "date": "2024-11-12", "test": "Spirometry", "results": { "FEV1": "75%" } }
-  ],
-  "doctor_notes": [{ "date": "2024-11-11", "author": "Dr. Lopez", "content": "Follow-up in 2 weeks." }],
-  "pharmacy_notes": [{ "date": "2024-11-10", "pharmacy": "Blue Pharmacy", "content": "Albuterol inhaler dispensed." }]
+  ]
 }
