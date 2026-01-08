@@ -73,6 +73,7 @@ if selected_patient:
     ):
         st.session_state.current_patient_id = patient_id
         st.session_state.chat_history = []
+        st.session_state.thread_id = str(uuid.uuid4())
 
     # Identity Banner (Static Context)
     dem = patient_data["demographics"]
@@ -129,7 +130,7 @@ if selected_patient:
             with st.spinner("Analyzing records..."):
                 for chunk in executor.stream(
                     {"messages": [("user", prompt)]},
-                    config={"configurable": {"thread_id": "default"}},
+                    config={"configurable": {"thread_id": st.session_state.thread_id}},
                     stream_mode="values",
                 ):
                     messages = chunk.get("messages", [])
