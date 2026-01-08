@@ -2,7 +2,7 @@ qdrant-client
 voyageai
 langchain
 langchain-community
-langchain-openai
+langchain-deepseek
 streamlit
 python-dotenv
 pydantic

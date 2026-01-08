@@ -2,7 +2,7 @@ from langchain.tools import BaseTool
 from typing import Optional, Type
 from pydantic import BaseModel, Field
 from core.vector_store import MedicalVectorStore
-from langchain_openai import ChatOpenAI
+from langchain_deepseek import ChatDeepSeek
 from langchain.agents import create_agent
 from langgraph.checkpoint.memory import MemorySaver
 import os
@@ -67,11 +67,9 @@ class MedicalSearchTool(BaseTool):
 class ClinicalAssistant:
     def __init__(self, vector_store):
         self.vector_store = vector_store
-        # Using DeepSeek via OpenAI-compatible API
-        self.llm = ChatOpenAI(
+        self.llm = ChatDeepSeek(
             model="deepseek-chat",
-            openai_api_key=os.getenv("DEEPSEEK_API_KEY"),
-            openai_api_base="https://api.deepseek.com/v1",
+            api_key=os.getenv("DEEPSEEK_API_KEY"),
             temperature=0,
         )
 
@@ -106,8 +104,6 @@ CRITICAL INSTRUCTIONS:
 
 Remember: Visit notes and lab results are NOT in the identity context - you must search for them!"""
 
-        agent = create_agent(
-            self.llm, tools, system_prompt=system_prompt
-        )
+        agent = create_agent(self.llm, tools, system_prompt=system_prompt)
 
         return agent
