@@ -2,6 +2,7 @@ import streamlit as st
 import os
 import json
 import sys
+import uuid
 
 # Add project root to sys.path to resolve core and utils modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -97,58 +98,11 @@ if selected_patient:
                 st.markdown(message.content)
         elif isinstance(message, AIMessage):
             with st.chat_message("assistant"):
-                # If message has tool calls, show them
-                if (
-                    hasattr(message, "additional_kwargs")
-                    and "tool_calls" in message.additional_kwargs
-                ):
-                    tool_calls = message.additional_kwargs["tool_calls"]
-                    if tool_calls:
-                        for tc in tool_calls:
-                            with st.expander(
-                                f"🛠️ Tool Call: {tc['name']}", expanded=False
-                            ):
-                                st.write("**Input:**")
-                                st.json(tc["args"])
-                                if tc.get("response"):
-                                    st.write("**Observation:**")
-                                    st.text(tc["response"])
-                st.markdown(message.content)
-        elif isinstance(message, AIMessage):
-            with st.chat_message("assistant"):
-                # If message has intermediate steps, show them
-                if (
-                    hasattr(message, "additional_kwargs")
-                    and "intermediate_steps" in message.additional_kwargs
-                ):
-                    intermediate_steps = message.additional_kwargs["intermediate_steps"]
-                    if intermediate_steps:
-                        for action, observation in intermediate_steps:
-                            with st.expander(
-                                f"🛠️ Tool Call: {action.tool}", expanded=False
-                            ):
-                                st.write("**Input:**")
-                                st.json(action.tool_input)
-                                st.write("**Observation:**")
-                                st.text(observation)
-                    else:
-                        st.caption("ℹ️ No tool calls needed - answered from context")
-                st.markdown(message.content)
-        elif isinstance(message, AIMessage):
-            with st.chat_message("assistant"):
-                # If message has intermediate steps, show them
-                if (
-                    hasattr(message, "additional_kwargs")
-                    and "intermediate_steps" in message.additional_kwargs
-                ):
-                    for action, observation in message.additional_kwargs[
-                        "intermediate_steps"
-                    ]:
-                        with st.expander(f"🛠️ Tool Call: {action.tool}", expanded=False):
+                if hasattr(message, "tool_calls") and message.tool_calls:
+                    for tc in message.tool_calls:
+                        with st.expander(f"🛠️ Tool Call: {tc['name']}", expanded=False):
                             st.write("**Input:**")
-                            st.code(action.tool_input)
-                            st.write("**Observation:**")
-                            st.markdown(observation)
+                            st.json(tc.get("args"))
                 st.markdown(message.content)
 
     if prompt := st.chat_input("Ask about patient history, lab trends, etc."):
@@ -230,10 +184,19 @@ if selected_patient:
                             st.write("**Observation:**")
                             st.text(tc["response"])
 
-            # Store AI message
+            # Store AI message with tool calls
+            tool_calls_formatted = [
+                {
+                    "name": tc["name"],
+                    "args": tc["args"],
+                    "id": str(uuid.uuid4()),
+                    "type": "tool_call",
+                }
+                for tc in tool_calls_found
+            ]
             ai_msg = AIMessage(
                 content=full_response,
-                additional_kwargs={"tool_calls": tool_calls_found},
+                tool_calls=tool_calls_formatted,
             )
             st.session_state.chat_history.append(ai_msg)
 else:
