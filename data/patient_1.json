@@ -8,7 +8,11 @@
   },
   "medical_history": {
     "chronic_conditions": ["Diabetes Tipo 2", "Hipertensión"],
-    "allergies": ["Penicilina"]
+    "allergies": ["Penicilina"],
+    "current_medications": [
+      { "name": "Metformina", "dose": "850mg", "frequency": "2x/día" },
+      { "name": "Losartán", "dose": "50mg", "frequency": "1x/día" }
+    ]
   },
   "recent_visits": [
     {
@@ -16,6 +20,12 @@
       "reason": "Control rutinario",
       "notes": "Glucosa en ayunas: 128 mg/dL. PA: 135/85. Se ajusta dosis de Losartán.",
       "doctor": "Dra. Martínez"
+    },
+    {
+      "date": "2024-08-20",
+      "reason": "Consulta por mareos",
+      "notes": "Paciente reporta mareos ocasionales. Se solicitan estudios. ECG normal.",
+      "doctor": "Dr. Gómez"
     }
   ],
   "lab_results": [

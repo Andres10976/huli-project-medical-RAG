@@ -3,9 +3,9 @@ from typing import Optional, Type
 from pydantic import BaseModel, Field
 from core.vector_store import MedicalVectorStore
 from langchain_openai import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.agents import AgentExecutor, create_openai_functions_agent
-from langchain.schema import SystemMessage
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_classic.agents import AgentExecutor, create_openai_functions_agent
+from langchain_core.messages import SystemMessage
 import os
 from dotenv import load_dotenv
 
@@ -37,8 +37,9 @@ class MedicalSearchTool(BaseTool):
 
         formatted_results = []
         for res in results:
+            event_type = res.payload.get("event_type", "record")
             formatted_results.append(
-                f"Date: {res.payload['timestamp']}\nContent: {res.payload['text']}"
+                f"Source: {event_type.capitalize()}\nDate: {res.payload['timestamp']}\nContent: {res.payload['text']}"
             )
 
         return "\n\n---\n\n".join(formatted_results)
@@ -58,17 +59,21 @@ class ClinicalAssistant:
         self.tools = [self.tool]
 
     def get_executor(self, identity_context):
+        # Escape braces in identity_context because ChatPromptTemplate will try to parse them
+        escaped_context = identity_context.replace("{", "{{").replace("}", "}}")
         prompt = ChatPromptTemplate.from_messages(
             [
                 (
                     "system",
                     f"""You are a professional clinical assistant. 
 Current Patient Identity Context:
-{identity_context}
+{escaped_context}
 
-Use the `medical_search_tool` to look up specific clinical history or lab trends. 
-Always cite the date of the event in your answer. 
-If the patient has allergies (shown in the identity context), always be mindful of them when discussing treatments.""",
+INSTRUCTIONS:
+1. Use the `medical_search_tool` to look up specific clinical history or lab trends. 
+2. Always cite the date and source of the information in your answer (e.g., "Según visita del 2024-10-15...").
+3. It must be absolutely clear where each piece of data comes from.
+4. If the patient has allergies (shown in the identity context), always be mindful of them when discussing treatments.""",
                 ),
                 MessagesPlaceholder(variable_name="chat_history"),
                 ("human", "{input}"),
@@ -77,4 +82,6 @@ If the patient has allergies (shown in the identity context), always be mindful 
         )
 
         agent = create_openai_functions_agent(self.llm, self.tools, prompt)
-        return AgentExecutor(agent=agent, tools=self.tools, verbose=True)
+        return AgentExecutor(
+            agent=agent, tools=self.tools, verbose=True, return_intermediate_steps=True
+        )

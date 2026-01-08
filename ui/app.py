@@ -1,9 +1,14 @@
 import streamlit as st
 import os
 import json
+import sys
+
+# Add project root to sys.path to resolve core and utils modules
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from core.vector_store import MedicalVectorStore
 from core.agent import ClinicalAssistant
-from langchain.schema import HumanMessage, AIMessage
+from langchain_core.messages import HumanMessage, AIMessage
 
 st.set_page_config(page_title="Clinical Assistant RAG", layout="wide")
 
@@ -91,8 +96,21 @@ if selected_patient:
         if isinstance(message, HumanMessage):
             with st.chat_message("user"):
                 st.markdown(message.content)
-        else:
+        elif isinstance(message, AIMessage):
             with st.chat_message("assistant"):
+                # If message has intermediate steps, show them
+                if (
+                    hasattr(message, "additional_kwargs")
+                    and "intermediate_steps" in message.additional_kwargs
+                ):
+                    for action, observation in message.additional_kwargs[
+                        "intermediate_steps"
+                    ]:
+                        with st.expander(f"🛠️ Tool Call: {action.tool}", expanded=False):
+                            st.write("**Input:**")
+                            st.code(action.tool_input)
+                            st.write("**Observation:**")
+                            st.markdown(observation)
                 st.markdown(message.content)
 
     if prompt := st.chat_input("Ask about patient history, lab trends, etc."):
@@ -115,8 +133,25 @@ if selected_patient:
                         "chat_history": st.session_state.chat_history[:-1],
                     }
                 )
+
+                intermediate_steps = response.get("intermediate_steps", [])
+
+                # Show tool calls
+                for action, observation in intermediate_steps:
+                    with st.expander(f"🛠️ Tool Call: {action.tool}", expanded=False):
+                        st.write("**Input:**")
+                        st.code(action.tool_input)
+                        st.write("**Observation:**")
+                        st.markdown(observation)
+
                 output = response["output"]
                 st.markdown(output)
-                st.session_state.chat_history.append(AIMessage(content=output))
+
+                # Store AI message with intermediate steps for persistence
+                ai_msg = AIMessage(
+                    content=output,
+                    additional_kwargs={"intermediate_steps": intermediate_steps},
+                )
+                st.session_state.chat_history.append(ai_msg)
 else:
     st.info("Please select a patient from the sidebar to begin.")

@@ -52,7 +52,7 @@
       }
     }
   },
-  "plugin": ["opencode-alibaba-qwen3-auth", "opencode-antigravity-auth@1.2.7"],
+  "plugin": ["opencode-alibaba-qwen3-auth", "opencode-antigravity-auth@1.2.8"],
   "agent": {
     "build": {
       "mode": "primary",
