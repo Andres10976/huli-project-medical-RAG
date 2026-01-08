@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   qdrant:
@@ -10,21 +10,6 @@ services:
     volumes:
       - ./qdrant_storage:/qdrant/storage
     restart: unless-stopped
-
-  redis:
-    image: redis:alpine
-    container_name: medical-rag-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
 
 volumes:
   redis_data:
