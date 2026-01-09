@@ -1,5 +1,7 @@
 # Clinical Assistant RAG (EHR-Driven)
 
+![Clinical Assistant Screenshot](example.png)
+
 A production-ready medical assistant powered by Retrieval-Augmented Generation (RAG) for querying Electronic Health Records (EHR). Built with semantic search, LLM-based reasoning, and real-time patient data retrieval.
 
 ## 🏗️ Architecture
