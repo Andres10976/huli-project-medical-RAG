@@ -4,6 +4,19 @@
 
 A production-ready medical assistant powered by Retrieval-Augmented Generation (RAG) for querying Electronic Health Records (EHR). Built with semantic search, LLM-based reasoning, and real-time patient data retrieval.
 
+## **NOTE**: 
+Multiple aspects of this project where adapte given the data that has been provided. In the following section I'll mention which parts and what would I do different with proper circunstances:
+
+- **JSON data sources:** If we are obtaining JSONs files from requesting structured databases, I would try to get the demographic and the medical_history directly from the DB using a proper tools instead of using RAG at all because this structured data is TOO IMPORTANT to consider the possibility to even miss it. That's also why on my solution I injected it directly into context from start as well as showing it to the users directly to reduce the margin of error to the minimum.
+  Also, if the info is always this structured, RAG struggles with structured data because it doesnt understand structure but context which natural sentences provides, JSONs files dont. That's why I'll also probably add a tool to search lab_results directly from the data source rather than from RAG, because, for example, RAG and vectorDB are not good for time oriented questions like "Last 3 lab results", and that's where traditional DBs shine.
+  What I would find value in ingesting in a vectorDB would be the recent_visits, because that way we can lookup doctor notes related to certain topic in a given time range or doctor. Otherwise, it will probably still be better to simply retrieved it using conventional datasources if we are not searching for anything based on the doctor notes.
+
+- **Data governance**: If the users need extreme discretion and anonymity, we can even use Microsoft Presidio which removes PII (Personal Identifiable Information) from the queries ad change it to tags that when the response is received are changed back to the original text to maximize data security.
+
+- **Async tool calling**: This project doesnt implement this but a proper project would include something similar to a "planning" phase so we query all the needed information async at the same time to maximize response speed. If information were still mising, another round would happen before answering the user query. 
+
+- **Model selection**: I used Deepseek for easily solve this because I had credits in my personal API key. In a real world scenario, in case you wanted the medics to have an medic assistant AI instead of a natural language chat that simply retrieves and answer the user question based on the patient case, this model might be overkill, BUT, honestly, Deepseek is so good and sooo cheap that, unless we are gonna use some really small model (which in that case we should probably do fine tuning to make sure the small model performs great if proven needed based on the model weights and performance) or a self hosted solution, then, I would really recommend the use of Deepseek based on price/quality balance.
+
 ## 🏗️ Architecture
 
 ```
@@ -96,7 +109,7 @@ A production-ready medical assistant powered by Retrieval-Augmented Generation (
 
 ### 4. **Identity vs. Event Data Separation**
 
-**Decision**: Split patient data into static (identity) and dynamic (events) categories
+**Decision**: Split patient data into static (identity) and dynamic (events) categories. Also, the reason WHY we added a patient selection instead of dynamically retrieve it will be further discussed in the interview but long story short, using only full name to retrieve the user is not enough and retrieving the wrong user in the medical field can be potencially letal. Problem is, using IDs to retrieve them affects accessibility and use access, so, we should try to automate based on schedule time and if needed, select/provide in chat the ID with confirmation to avoid this fatal mistake. 
 
 **Rationale**:
 
