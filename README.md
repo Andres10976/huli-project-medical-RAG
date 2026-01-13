@@ -2,7 +2,7 @@
 
 ![Clinical Assistant Screenshot](example.png)
 
-A production-ready medical assistant powered by Retrieval-Augmented Generation (RAG) for querying Electronic Health Records (EHR). Built with semantic search, LLM-based reasoning, and real-time patient data retrieval.
+A Proof-of-Concept medical assistant powered by Retrieval-Augmented Generation (RAG) for querying Electronic Health Records (EHR). Built with semantic search, LLM-based reasoning, and real-time patient data retrieval.
 
 ## **NOTE**: 
 Multiple aspects of this project where adapte given the data that has been provided. In the following section I'll mention which parts and what would I do different with proper circunstances:
